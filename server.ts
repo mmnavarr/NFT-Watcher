@@ -2,7 +2,7 @@ import http from "http";
 import main from "./main";
 
 const HTTP_HOST = "localhost";
-const HTTP_PORT = 8001;
+const HTTP_PORT = 8008;
 
 const server = http.createServer();
 

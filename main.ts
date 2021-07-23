@@ -6,15 +6,12 @@ import { tweet, uploadImage } from "./twitter";
 // Configure provider
 const isProduction = process.env.NODE_ENV === "production";
 const network = isProduction ? "homestead" : "rinkeby";
-const provider = ethers.getDefaultProvider(network, {
-  alchemy: isProduction
+const provider = new ethers.providers.AlchemyProvider(
+  network,
+  isProduction
     ? process.env.ALCHEMY_MAINNET_URL
-    : process.env.ALCHEMY_RINKEBY_URL,
-  infura: isProduction
-    ? process.env.INFURA_MAINNET_URL
-    : process.env.INFURA_RINKEBY_URL,
-  etherscan: process.env.ETHERSCAN_API_KEY,
-});
+    : process.env.ALCHEMY_RINKEBY_URL
+);
 
 type MintEventArgs = [string, BigNumber, BigNumber];
 
@@ -24,13 +21,13 @@ const contractAddress = isProduction
 
 const main = async () => {
   try {
-    const network = await provider.getNetwork();
-    console.log("🚀 ~ file: main.ts ~ line 24 ~ main ~ network", network);
-    const blockNumber = await provider.getBlockNumber();
-    console.log(
-      "🚀 ~ file: index.ts ~ line 9 ~ main ~ blockNumber",
-      blockNumber
-    );
+    // const network = await provider.getNetwork();
+    // console.log("🚀 ~ file: main.ts ~ line 24 ~ main ~ network", network);
+    // const blockNumber = await provider.getBlockNumber();
+    // console.log(
+    //   "🚀 ~ file: index.ts ~ line 9 ~ main ~ blockNumber",
+    //   blockNumber
+    // );
 
     const contract = new ethers.Contract(
       contractAddress,
@@ -46,6 +43,9 @@ const main = async () => {
       const tokenId = _tokenId.toNumber();
       const projectId = _projectId.toNumber();
 
+      // Hack to convert 95000337 to 337 (prefixed 95 is project id inside of tokenId)
+      const realTokenId = tokenId % 10000;
+
       console.log(
         "🚀 ~ file: index.ts ~ line 28 ~ contract.on ~ [to, tokenId, projectId]",
         [to, tokenId, projectId]
@@ -54,20 +54,20 @@ const main = async () => {
       if (projectId == 95) {
         console.log("CV Minted!");
 
-        // Hack to convert 95000337 to 337 (prefixed 95 is project id inside of tokenId)
-        const venetianNumber = tokenId % 10000;
-
         // Upload art blocks image to use media id with tweet
         const media_id = await uploadImage(
           `https://api.artblocks.io/image/${tokenId}`
         );
 
         await tweet(
-          `CryptoVenetian #${venetianNumber} minted by 0x1Cfc86971F85CfA62acaD0d6d874D2d396Cb92Fb\n\nhttps://artblocks.io/token/${tokenId}`,
+          `CryptoVenetian #${realTokenId} minted by ${to}\n\nhttps://artblocks.io/token/${tokenId}`,
           media_id
         );
       } else {
         console.log("Non-CV Minted!");
+        await tweet(
+          `ArtBlocks NFT #${realTokenId} minted by ${to}\n\nhttps://artblocks.io/token/${tokenId}`
+        );
       }
     });
 
