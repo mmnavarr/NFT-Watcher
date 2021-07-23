@@ -12,14 +12,14 @@ const provider = new ethers.providers.AlchemyProvider(
     ? process.env.ALCHEMY_MAINNET_URL
     : process.env.ALCHEMY_RINKEBY_URL
 );
-
-type MintEventArgs = [string, BigNumber, BigNumber];
-
 const contractAddress = isProduction
   ? "0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270"
   : "0x152eee3dcc5526efd646e9b45c9a9672bffcc097";
+const CV_PROJECT_ID = 95;
 
-const main = async () => {
+type MintEventArgs = [string, BigNumber, BigNumber];
+
+const listenForArtBlocksMint = async () => {
   try {
     // const network = await provider.getNetwork();
     // console.log("🚀 ~ file: main.ts ~ line 24 ~ main ~ network", network);
@@ -46,12 +46,12 @@ const main = async () => {
       // Hack to convert 95000337 to 337 (prefixed 95 is project id inside of tokenId)
       const realTokenId = tokenId % 10000;
 
-      console.log(
-        "🚀 ~ file: index.ts ~ line 28 ~ contract.on ~ [to, tokenId, projectId]",
-        [to, tokenId, projectId]
-      );
+      // console.log(
+      //   "🚀 ~ file: index.ts ~ line 28 ~ contract.on ~ [to, tokenId, projectId]",
+      //   [to, tokenId, projectId]
+      // );
 
-      if (projectId == 95) {
+      if (projectId == CV_PROJECT_ID) {
         console.log("CV Minted!");
 
         // Upload art blocks image to use media id with tweet
@@ -65,9 +65,6 @@ const main = async () => {
         );
       } else {
         console.log("Non-CV Minted!");
-        await tweet(
-          `ArtBlocks NFT #${realTokenId} minted by ${to}\n\nhttps://artblocks.io/token/${tokenId}`
-        );
       }
     });
 
@@ -77,4 +74,4 @@ const main = async () => {
   }
 };
 
-export default main;
+export default listenForArtBlocksMint;
